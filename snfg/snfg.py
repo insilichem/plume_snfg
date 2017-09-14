@@ -34,9 +34,14 @@ def _define_snfg_colors():
 
 class SNFG(object):
 
+    _instances = []
+
     def __init__(self, size=4.0, connect=True, cylinder_radius=0.5, cylinder_redfac=0,
                  sphere_redfac=0, molecules=None, hide_residue=False):
-        self.molecules = molecules
+        self._instances.append(self)
+        if molecules is None:
+            molecules = chimera.openModels.list(modelTypes=[chimera.Molecule])
+        self.molecules = {m: None for m in molecules}
         self.size = size
         self.connect = connect
         self.cylinder_radius = cylinder_radius
@@ -44,6 +49,11 @@ class SNFG(object):
         self.sphere_redfac = sphere_redfac
         self.hide_residue = hide_residue
         self.saccharydes = {}
+        self._handler_mol, self._handler_res = None, None
+        self.enable()
+    
+    def __del__(self):
+        self._instances.remove(self)
 
     @classmethod
     def as_icon(cls, molecules=None):
@@ -75,29 +85,38 @@ class SNFG(object):
             _define_snfg_colors()
         self.detect()
         self.draw()
+        self._handler_mol = chimera.triggers.addHandler('Molecule', self._update_cb, None)
+        self._handler_res= chimera.triggers.addHandler('Residue', self._update_res_cb, None)
 
-    @staticmethod
-    def disable():
-        vrml_models = chimera.openModels.list(modelTypes=[chimera.VRMLModel])
-        chimera.openModels.close([m for m in vrml_models if m.name.startswith('SNFG')])
-        # TODO: Disable hooks and updaters
+    def disable(self):
+        for s in self.saccharydes.values():
+            s.destroy()
+        self.saccharydes = {}
+        if self._handler_mol is not None:
+            chimera.triggers.deleteHandler('Molecule', self._handler_mol)
+            self._handler_mol = None
+        if self._handler_res is not None:
+            chimera.triggers.deleteHandler('Residue', self._handler_res)
+            self._handler_res = None
 
     def detect(self):
         """
         Assign appropriate shape/color based on residue name
         """
         # Collect a list of residues that contain carbohydrate ring atoms
-        rings_per_molecule = self.find_saccharydic_residues(molecules=self.molecules)
+        rings_per_molecule = self.find_saccharydic_residues(molecules=self.molecules.keys())
         # TODO: set carbatoms
         # TODO: Filter out rings that aren't actually carbohydrates
         #       (can happen with linear carbohydrates with coordinating ions)
         # TODO: Check for GLYCAM reducing-terminal ROH to assign appropriate resname color
 
         for molecule, residues in rings_per_molecule.items():
+            self.molecules[molecule] = []
             for residue, ring in residues.items():
                 # Assign shape/size/color properties based on recognized residue names
                 saccharyde = Saccharyde(residue, ring.orderedAtoms, base_size=self.size)
                 self.saccharydes[residue] = saccharyde
+                self.molecules[molecule].append(residue)
 
     @staticmethod
     def find_saccharydic_residues(molecules=None):
@@ -213,16 +232,33 @@ class SNFG(object):
         .sphere {end[0]} {end[1]} {end[2]} {sphere_radius}
         .cylinder {start[0]} {start[1]} {start[2]} {end[0]} {end[1]} {end[2]} {cylinder_radius}
         """.format(**bild_attrs)
-        return ring.vrml._build_vrml(bild, name='SNFG connector')
+        ring.vrml._vrml_connector = ring.vrml._build_vrml(bild, name='SNFG connector')
+        return ring.vrml._vrml_connector
 
-    def update(self, frame):
+    def destroy_shapes(self):
+        for s in self.saccharydes.values():
+            s.destroy()
+        self.saccharydes = {}
+
+    def _update_cb(self, name, data, changes):
         """
         Update shapes position and orientation after coordinates change.
         """
-        raise NotImplementedError
+        if (set(self.molecules) & changes.modified 
+            and 'activeCoordSet changed' in changes.reasons):
+            self.draw()
+    
+    def _update_res_cb(self, name, data, changes):
+        if changes.deleted:
+            for r, saccharyde in self.saccharydes.items():
+                if r in changes.deleted:
+                    saccharyde.destroy()
+                    del self.saccharydes[r]
 
 
 class Saccharyde(object):
+
+    _id = [100]
 
     def __init__(self, residue, ring_atoms, base_size=4.0):
         self.residue = residue
@@ -239,10 +275,16 @@ class Saccharyde(object):
         self.size = SCALES.get(self.shape, 1.0) * base_size
         colors = self.info.get('color').split()
         self.color1 = 'snfg_' + colors[0]
-        self.color2 = 'snfg_' + colors[1] if len(colors) == 2 else ''
+        self.color2 = 'snfg_' + colors[1] if len(colors) == 2 else 'white'
         self.atom_map = {a.name: a for a in self.atoms}
         self.shifted = min(self.atom_map.keys()) == 'C2'
         self.vrml = None
+        self._id[0] += 1
+
+    def destroy(self):
+        if self.vrml is not None:
+            self.vrml.destroy()
+        del self
 
     @property
     def center(self):
@@ -299,10 +341,11 @@ class Saccharyde(object):
         return [a.xformCoord() for a in self.atoms]
 
     def build(self, name=None):
-        if self.vrml:
-            self.vrml._vrml.destroy()
+        if self.vrml is not None:
+            self.vrml.destroy()
         self.vrml = OrientedShape(self.shape, self.p6, self.size, self.center,
-                                  self.center_att, self.color1, self.color2, name)
+                                  self.center_att, self.color1, self.color2, name,
+                                  parent_id=self._id[0])
         self.vrml.draw()
 
 
@@ -339,10 +382,9 @@ class OrientedShape(object):
     """
 
     SUPPORTED_SHAPES = set('sphere cube diamond cone rectangle star hexagon pentagon'.split())
-    _cls_baseid = [100]
 
     def __init__(self, shape, p6, size, center, center_att, color1, color2,
-                 name='SNFG'):
+                 name='SNFG', parent_id=100):
         if shape not in self.SUPPORTED_SHAPES:
             raise ValueError('`shape` should be one of: '
                              '{}'.format(', '.join(self.SUPPORTED_SHAPES)))
@@ -354,13 +396,22 @@ class OrientedShape(object):
         self.center_att = center_att
         self.color1 = color1
         self.color2 = color2
-        self._vrml = None
-        self._cls_baseid[0] += 1
-        self._baseid = self._cls_baseid[0]
+        self._vrml_shape = None
+        self._vrml_connector = None
+        self._id = parent_id
         self._subid = 0
 
+    def destroy(self):
+        if self._vrml_shape is not None:
+            for v in self._vrml_shape:
+                v.destroy()
+        if self._vrml_connector is not None:
+            for v in self._vrml_connector:
+                v.destroy()
+        del self
+
     def draw(self):
-        self._vrml = getattr(self, '_draw_' + self.shape)()
+        self._vrml_shape = getattr(self, '_draw_' + self.shape)()
 
     def _draw_sphere(self):
         x, y, z = self.center
@@ -862,13 +913,11 @@ class OrientedShape(object):
         if name is None:
             name = self.name + '-' + self.shape
         f = StringIO(dedent(bild))
-        print(bild)
         try:
             vrml = openBildFileObject(f, '<string>', name)
         except chimera.NotABug:
             print(bild)
-        chimera.openModels.add(vrml, baseId=self._baseid,
-                               subid=self._subid)
+        chimera.openModels.add(vrml, baseId=self._id, subid=self._subid)
         self._subid += 1
         return vrml
 

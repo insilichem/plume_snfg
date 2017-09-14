@@ -3,9 +3,10 @@
 
 # get used to importing this in your Py27 projects!
 from __future__ import print_function, division 
-import chimera.extension
+import chimera
 from Midas.midas_text import addCommand, doExtensionFunc
 from snfg import SNFG
+
 
 def cmd_snfg(cmdName, args):
     def cmd(models=None, method='icon', **kwargs):
@@ -16,6 +17,12 @@ def cmd_snfg(cmdName, args):
     doExtensionFunc(cmd, args, specInfo=[("spec", "models", 'molecules')])
 
 def cmd_undo_snfg(cmdName, args):
-    doExtensionFunc(SNFG.disable, args)
+    def cmd(*args):
+        for instance in SNFG._instances:
+            instance.disable()
+            chimera.viewer.updateCB(chimera.viewer)
+
+    doExtensionFunc(cmd, args)
+
 
 addCommand("snfg", cmd_snfg, cmd_undo_snfg)
