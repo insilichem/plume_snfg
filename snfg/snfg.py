@@ -119,6 +119,7 @@ class SNFG(object):
         if self._handler_res is not None:
             chimera.triggers.deleteHandler('Residue', self._handler_res)
             self._handler_res = None
+        Saccharyde._base_id[0] = 100
 
     def detect(self):
         """
@@ -146,10 +147,10 @@ class SNFG(object):
         rings_per_molecule = defaultdict(dict)
         for m in molecules:
             for ring in m.minimumRings():
-                    a = next(iter(ring.atoms))
+                a = next(iter(ring.atoms)) 
                 if len(ring.atoms) <= 6 and a.residue in hetero:
                     if all(a.name in ATOM_NAMES for a in ring.atoms):
-                    rings_per_molecule[m][a.residue] = ring
+                        rings_per_molecule[m][a.residue] = ring
                     elif a.residue.type in REVERSE_RESIDUE_CODES:
                         self._problematic_residues.append(a.residue)
         return rings_per_molecule
@@ -192,7 +193,7 @@ class SNFG(object):
                     break
             # If the oxygen is attached to a carbon
             # Then the attached residue is a carbohydrate or this is an O-linked glycan
-                    # Check for ring atoms of the attached carbohydrate residue
+            # Check for ring atoms of the attached carbohydrate residue
             if C_att is not None:
                 attached_ring = self.saccharydes.get(C_att.residue)
                 # If the attached residue contains ring atoms
@@ -719,7 +720,7 @@ class OrientedShape(object):
         p6 = Point(*self.p6)
 
         vec_AB = center_att - center
-        shape_size = self.size / 1.5
+        shape_size = self.size * 1.5
         half_length = shape_size / 2.0
         thickness = shape_size / 4.0
 
