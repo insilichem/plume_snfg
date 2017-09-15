@@ -105,6 +105,11 @@ class SNFG(object):
                       ' with wrong atom names.'.format(r))
     def disable(self):
         self._problematic_residues = []
+        to_remove = []
+        for vrml in chimera.openModels.list(modelTypes=[chimera.VRMLModel]):
+            if vrml.name.startswith('SNFG'):
+                to_remove.append(vrml)
+        chimera.openModels.close(to_remove)
         for s in self.saccharydes.values():
             s.destroy()
         self.saccharydes = {}
@@ -282,7 +287,7 @@ class SNFG(object):
 
 class Saccharyde(object):
 
-    _id = [100]
+    _base_id = [100]
 
     def __init__(self, residue, ring_atoms, base_size=4.0):
         self.residue = residue
@@ -303,12 +308,12 @@ class Saccharyde(object):
         self.atom_map = {a.name: a for a in self.atoms}
         self.shifted = min(self.atom_map.keys()) == 'C2'
         self.vrml = None
-        self._id[0] += 1
+        self._base_id[0] += 1
+        self._id = self._base_id[0]
 
     def destroy(self):
         if self.vrml is not None:
             self.vrml.destroy()
-        del self
 
     @property
     def center(self):
@@ -428,12 +433,11 @@ class OrientedShape(object):
 
     def destroy(self):
         if self._vrml_shape is not None:
-            for v in self._vrml_shape:
-                v.destroy()
+            chimera.openModels.close(self._vrml_shape)
+            self._vrml_shape = None
         if self._vrml_connector is not None:
-            for v in self._vrml_connector:
-                v.destroy()
-        del self
+            chimera.openModels.close(self._vrml_connector)
+            self._vrml_connector = None
 
     def draw(self):
         self._vrml_shape = getattr(self, '_draw_' + self.shape)()
