@@ -134,17 +134,16 @@ class SNFG(object):
                 self.saccharydes[residue] = saccharyde
                 self.molecules[molecule].append(residue)
 
-    @staticmethod
-    def find_saccharydic_residues(molecules=None):
+    def find_saccharydic_residues(self, molecules=None):
         if molecules is None:
             molecules = chimera.openModels.list(modelTypes=[chimera.Molecule])
         hetero = chimera.specifier.evalSpec('ligand', models=molecules).residues()
         rings_per_molecule = defaultdict(dict)
         for m in molecules:
             for ring in m.minimumRings():
-                if len(ring.atoms) <= 6 and \
-                   all(a.residue in hetero and a.name in ATOM_NAMES for a in ring.atoms):
                     a = next(iter(ring.atoms))
+                if len(ring.atoms) <= 6 and a.residue in hetero:
+                    if all(a.name in ATOM_NAMES for a in ring.atoms):
                     rings_per_molecule[m][a.residue] = ring
                     elif a.residue.type in REVERSE_RESIDUE_CODES:
                         self._problematic_residues.append(a.residue)
@@ -155,7 +154,7 @@ class SNFG(object):
         Draw each residue shape according to its SNFG assignment
         """
         for residue, saccharyde in self.saccharydes.items():
-            saccharyde.build(name='SNFG-Shape')
+            saccharyde.build()
             for a in residue.atoms:
                 a.display = not self.hide_residue
         if self.connect:
@@ -183,14 +182,14 @@ class SNFG(object):
         if O_att is not None:
             # Check if the oxygen is then attached to a carbon
             for neighbor in O_att.neighbors:
-                if neighbor.element.name == 'C' and neighbor.residue != O_att.residue:
+                if neighbor.element.name == 'C' and neighbor.residue != ring.a1.residue:
                     C_att = neighbor
                     break
             # If the oxygen is attached to a carbon
             # Then the attached residue is a carbohydrate or this is an O-linked glycan
                     # Check for ring atoms of the attached carbohydrate residue
             if C_att is not None:
-                attached_ring = self.saccharydes.get(O_att.residue)
+                attached_ring = self.saccharydes.get(C_att.residue)
                 # If the attached residue contains ring atoms
                 # Then the attached residue is a carbohydrate
                 # Set position of attachment as geometric center of ring atoms
@@ -253,7 +252,7 @@ class SNFG(object):
         .sphere {end[0]} {end[1]} {end[2]} {sphere_radius}
         .cylinder {start[0]} {start[1]} {start[2]} {end[0]} {end[1]} {end[2]} {cylinder_radius}
         """.format(**bild_attrs)
-        ring.vrml._vrml_connector = ring.vrml._build_vrml(bild, name='SNFG connector')
+        ring.vrml._vrml_connector = ring.vrml._build_vrml(bild, name='SNFG connector {}'.format(bild_attrs['kind']))
         return ring.vrml._vrml_connector
 
     def destroy_shapes(self):
@@ -365,12 +364,13 @@ class Saccharyde(object):
     def xform_xyz(self):
         return [a.xformCoord() for a in self.atoms]
 
-    def build(self, name=None):
+    def build(self):
         if self.vrml is not None:
             self.vrml.destroy()
+        name = 'SNFG {}'.format(self.fullname)
         self.vrml = OrientedShape(self.shape, self.p6, self.size, self.center,
                                   self.center_att, self.color1, self.color2, name,
-                                  parent_id=self._id[0])
+                                  parent_id=self._id)
         self.vrml.draw()
 
 
@@ -936,7 +936,7 @@ class OrientedShape(object):
 
     def _build_vrml(self, bild, name=None):
         if name is None:
-            name = self.name + '-' + self.shape
+            name = self.name
         f = StringIO(dedent(bild))
         try:
             vrml = openBildFileObject(f, '<string>', name)
