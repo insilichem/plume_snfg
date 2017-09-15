@@ -95,8 +95,15 @@ class SNFG(object):
         self.draw()
         self._handler_mol = chimera.triggers.addHandler('Molecule', self._update_cb, None)
         self._handler_res= chimera.triggers.addHandler('Residue', self._update_res_cb, None)
-
+        if self._problematic_residues:
+            chimera.statusline.show_message('Detected carbohydrate residues with potentially'
+                                            ' wrong atom names. Check reply log!', 
+                                            color='red', blankAfter=5)
+            for r in set(self._problematic_residues):
+                print('! Residue {} might be a carbohydrate'
+                      ' with wrong atom names.'.format(r))
     def disable(self):
+        self._problematic_residues = []
         for s in self.saccharydes.values():
             s.destroy()
         self.saccharydes = {}
@@ -138,6 +145,8 @@ class SNFG(object):
                    all(a.residue in hetero and a.name in ATOM_NAMES for a in ring.atoms):
                     a = next(iter(ring.atoms))
                     rings_per_molecule[m][a.residue] = ring
+                    elif a.residue.type in REVERSE_RESIDUE_CODES:
+                        self._problematic_residues.append(a.residue)
         return rings_per_molecule
 
     def draw(self):
@@ -259,6 +268,10 @@ class SNFG(object):
     def _update_res_cb(self, name, data, changes):
         if changes.deleted:
             for r, saccharyde in self.saccharydes.items():
+                try:
+                    self._problematic_residues.remove(r)
+                except:
+                    pass
                 if r in changes.deleted:
                     saccharyde.destroy()
                     del self.saccharydes[r]
