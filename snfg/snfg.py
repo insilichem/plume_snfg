@@ -56,25 +56,33 @@ class SNFG(object):
         self._instances.remove(self)
 
     @classmethod
-    def as_icon(cls, molecules=None):
-        return cls(size=1.5, connect=False, molecules=molecules,
+    def as_icon(cls, molecules=None, size=None):
+        if size is None:
+            size = 1.5
+        return cls(size=size, connect=False, molecules=molecules,
                    hide_residue=False)
 
     @classmethod
-    def as_full(cls, molecules=None):
-        return cls(size=4.0, cylinder_radius=0.5, 
+    def as_full(cls, molecules=None, size=None):
+        if size is None:
+            size = 4.0
+        return cls(size=size, cylinder_radius=0.4, 
                    cylinder_redfac=0, sphere_redfac=0, molecules=molecules,
                    hide_residue=True)
 
     @classmethod
-    def as_fullred(cls, molecules=None):
-        return cls(size=4.0, cylinder_radius=0.5, cylinder_redfac=0.4,
+    def as_fullred(cls, molecules=None, size=None):
+        if size is None:
+            size = 4.0
+        return cls(size=size, cylinder_radius=0.4, cylinder_redfac=0.4,
                    sphere_redfac=0.25, molecules=molecules,
                    hide_residue=True)
     
     @classmethod
-    def as_fullshown(cls, molecules=None):
-        return cls(size=4.0, cylinder_radius=0.5, cylinder_redfac=0.4,
+    def as_fullshown(cls, molecules=None, size=None):
+        if size is None:
+            size = 4.0
+        return cls(size=size, cylinder_radius=0.4, cylinder_redfac=0.4,
                    sphere_redfac=0.25, molecules=molecules,
                    hide_residue=False)
 
