@@ -9,12 +9,12 @@ from snfg import SNFG
 
 
 def cmd_snfg(cmdName, args):
-    def cmd(models=None, method='icon', **kwargs):
+    def cmd(models=None, method='icon', size=None, **kwargs):
         if models or models is None:
-            snfg = getattr(SNFG, 'as_'+method)(molecules=models, **kwargs)
-            snfg.enable()
+            snfg = getattr(SNFG, 'as_'+method)(molecules=models, size=size, **kwargs)
 
     doExtensionFunc(cmd, args, specInfo=[("spec", "models", 'molecules')])
+
 
 def cmd_undo_snfg(cmdName, args):
     def cmd(*args):
