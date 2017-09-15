@@ -10,7 +10,7 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-from snfg_definitions import COLORS, RESIDUES, SCALES, ATOM_NAMES, REVERSE_RESIDUE_CODES
+from snfg_definitions import COLORS, RESIDUES, SCALES, ATOM_NAMES, REVERSE_RESIDUE_CODES, SUGAR_BOND_COLORS
 import chimera
 import Matrix as M
 from chimera import runCommand as run, cross, Point, Vector
@@ -49,6 +49,7 @@ class SNFG(object):
         self.sphere_redfac = sphere_redfac
         self.hide_residue = hide_residue
         self.saccharydes = {}
+        self._problematic_residues = []
         self._handler_mol, self._handler_res = None, None
         self.enable()
     
@@ -195,10 +196,13 @@ class SNFG(object):
                 # Set position of attachment as geometric center of ring atoms
                 # of attached carbohydrate residue
                 if attached_ring is not None and attached_ring is not ring:
+                    # TODO: Check name of C and color accordingly
+                    sugar_bond_type = int(C_att.name[1])
+                    color = SUGAR_BOND_COLORS.get(sugar_bond_type, 'gray')
                     bild_attrs = dict(start=geom_center, end=attached_ring.center,
                                       sphere_radius=self.cylinder_radius,
                                       cylinder_radius=self.cylinder_radius,
-                                      kind='saccharyde')
+                                      kind='saccharyde ' + C_att.name, color=color)
                 # Otherwise this is an O-linked glycan or GLYCAM OME or TBT
                 else:
                     # Check for alpha carbon of attached protein residue
@@ -208,21 +212,21 @@ class SNFG(object):
                         bild_attrs = dict(start=geom_center, end=att_CA[0].coord(),
                                           sphere_radius=self.cylinder_radius,
                                           cylinder_radius=self.cylinder_radius,
-                                          kind='O-linked glycan')
+                                          kind='O-linked glycan', color='gray')
                     else:
                         # Then GLYCAM OME or TBT
                         bild_attrs = dict(start=geom_center, end=O_att.coord(),
                                           sphere_radius=self.size *
                                           SCALES['sphere'] * self.sphere_redfac,
                                           cylinder_radius=self.cylinder_radius * self.cylinder_redfac,
-                                          kind='GLYCAM OME or TBT')
+                                          kind='GLYCAM OME or TBT', color='gray')
             # If the oxygen is not attached to a carbon
             else:
                 # Then it is a terminal oxygen and marks the reducing end
                 bild_attrs = dict(start=geom_center, end=O_att.coord(),
                                   sphere_radius=self.size * SCALES['sphere'] * self.sphere_redfac,
                                   cylinder_radius=self.cylinder_radius * self.cylinder_redfac,
-                                  kind='reducing end')
+                                  kind='reducing end', color='gray')
                 # If the residue has an attached nitrogen
         elif N_att is not None:
             # Then we assume this is an N-linked glycan
@@ -231,7 +235,7 @@ class SNFG(object):
             bild_attrs = dict(start=geom_center, end=att_CA[0].coord(),
                               sphere_radius=self.cylinder_radius,
                               cylinder_radius=self.cylinder_radius,
-                              kind='N-linked glycan')
+                              kind='N-linked glycan', color='gray')
         # If there is no oxygen or nitrogen attached
         else:
             # Generate a point to denote terminal
@@ -241,11 +245,11 @@ class SNFG(object):
             bild_attrs = dict(start=geom_center, end=geom_center_att,
                               sphere_radius=self.cylinder_radius,
                               cylinder_radius=self.cylinder_radius,
-                              kind='terminal')
+                              kind='terminal', color='gray')
 
         geom_center_att = bild_attrs['end']
         bild = """
-        .color gray
+        .color {color}
         .sphere {end[0]} {end[1]} {end[2]} {sphere_radius}
         .cylinder {start[0]} {start[1]} {start[2]} {end[0]} {end[1]} {end[2]} {cylinder_radius}
         """.format(**bild_attrs)

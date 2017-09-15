@@ -3,6 +3,15 @@
 
 ATOM_NAMES = set('C1 C2 C3 C4 C5 O5 O6'.split())
 
+SUGAR_BOND_COLORS = {
+    1: 'yellow',
+    2: 'orange',
+    3: 'red',
+    4: 'purple',
+    5: 'cyan',
+    6: 'green',
+}
+
 COLORS = dict(
     white=(0.00, 0.00, 0.00, 0.00),
     blue=(1.00, 0.50, 0.00, 0.00),
