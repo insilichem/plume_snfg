@@ -325,8 +325,9 @@ class Saccharyde(object):
         self.shape = self.info.get('shape')
         self.size = SCALES.get(self.shape, 1.0) * base_size
         colors = self.info.get('color').split()
-        self.color1 = 'snfg_' + colors[0]
-        self.color2 = 'snfg_' + colors[1] if len(colors) == 2 else 'white'
+        self.color2 = self.color1 = 'snfg_' + colors[0]
+        if len(colors) == 2:
+            self.color2 = 'snfg_' + colors[1]
         self.atom_map = {a.name: a for a in self.atoms}
         self.shifted = min(self.atom_map.keys()) == 'C2'
         self.vrml = None
