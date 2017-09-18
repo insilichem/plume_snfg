@@ -1,4 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from snfg import SNFG
+from core import SNFG
+import gui
+import prefs

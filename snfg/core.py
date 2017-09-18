@@ -13,7 +13,7 @@ except ImportError:
 from snfg_definitions import COLORS, RESIDUES, SCALES, ATOM_NAMES, REVERSE_RESIDUE_CODES, SUGAR_BOND_COLORS
 import chimera
 import Matrix as M
-from chimera import runCommand as run, cross, Point, Vector
+from chimera import runCommand as run, cross, Point, Vector, preferences
 from Bld2VRML import openFileObject as openBildFileObject
 
 
@@ -37,7 +37,7 @@ class SNFG(object):
     _instances = []
 
     def __init__(self, size=4.0, connect=True, cylinder_radius=0.5, cylinder_redfac=0,
-                 sphere_redfac=0, molecules=None, hide_residue=False):
+                 sphere_redfac=0, molecules=None, hide_residue=False, bondtypes=True):
         self._instances.append(self)
         if molecules is None:
             molecules = chimera.openModels.list(modelTypes=[chimera.Molecule])
@@ -48,6 +48,7 @@ class SNFG(object):
         self.cylinder_redfac = cylinder_redfac
         self.sphere_redfac = sphere_redfac
         self.hide_residue = hide_residue
+        self.bondtypes = bondtypes
         self.saccharydes = {}
         self._problematic_residues = []
         self._handler_mol, self._handler_res = None, None
@@ -59,33 +60,54 @@ class SNFG(object):
     @classmethod
     def as_icon(cls, molecules=None, size=None):
         if size is None:
-            size = 1.5
+            size = preferences.get('plume_snfg', 'icon_size')
         return cls(size=size, connect=False, molecules=molecules,
                    hide_residue=False)
 
     @classmethod
-    def as_full(cls, molecules=None, size=None):
+    def as_full(cls, molecules=None, size=None, cylinder_radius=None,
+                     connect=None, bondtypes=None):
         if size is None:
-            size = 4.0
-        return cls(size=size, cylinder_radius=0.4, 
+            size = preferences.get('plume_snfg', 'full_size')
+        if cylinder_radius is None:
+            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+        if connect is None:
+            connect = preferences.get('plume_snfg', 'connect')
+        if bondtypes is None:
+            bondtypes = preferences.get('plume_snfg', 'bondtypes')
+        return cls(size=size, cylinder_radius=cylinder_radius, 
                    cylinder_redfac=0, sphere_redfac=0, molecules=molecules,
-                   hide_residue=True)
+                   hide_residue=True, connect=connect, bondtypes=bondtypes)
 
     @classmethod
-    def as_fullred(cls, molecules=None, size=None):
+    def as_fullred(cls, molecules=None, size=None, cylinder_radius=None,
+                     connect=None, bondtypes=None):
         if size is None:
-            size = 4.0
-        return cls(size=size, cylinder_radius=0.4, cylinder_redfac=0.4,
-                   sphere_redfac=0.25, molecules=molecules,
-                   hide_residue=True)
+            size = preferences.get('plume_snfg', 'full_size')
+        if cylinder_radius is None:
+            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+        if connect is None:
+            connect = preferences.get('plume_snfg', 'connect')
+        if bondtypes is None:
+            bondtypes = preferences.get('plume_snfg', 'bondtypes')
+        return cls(size=size, cylinder_radius=cylinder_radius, cylinder_redfac=0.4,
+                   sphere_redfac=0.25, molecules=molecules, hide_residue=True,
+                   connect=connect, bondtypes=bondtypes)
     
     @classmethod
-    def as_fullshown(cls, molecules=None, size=None):
+    def as_fullshown(cls, molecules=None, size=None, cylinder_radius=None,
+                     connect=None, bondtypes=None):
         if size is None:
-            size = 4.0
-        return cls(size=size, cylinder_radius=0.4, cylinder_redfac=0.4,
-                   sphere_redfac=0.25, molecules=molecules,
-                   hide_residue=False)
+            size = preferences.get('plume_snfg', 'full_size')
+        if cylinder_radius is None:
+            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+        if connect is None:
+            connect = preferences.get('plume_snfg', 'connect')
+        if bondtypes is None:
+            bondtypes = preferences.get('plume_snfg', 'bondtypes')
+        return cls(size=size, cylinder_radius=cylinder_radius, cylinder_redfac=0.4,
+                   sphere_redfac=0.25, molecules=molecules, hide_residue=False,
+                   connect=connect, bondtypes=bondtypes)
 
     def enable(self):
         self.disable()
@@ -103,6 +125,7 @@ class SNFG(object):
             for r in set(self._problematic_residues):
                 print('! Residue {} might be a carbohydrate'
                       ' with wrong atom names.'.format(r))
+    
     def disable(self):
         self._problematic_residues = []
         to_remove = []
@@ -202,8 +225,10 @@ class SNFG(object):
                 # of attached carbohydrate residue
                 if attached_ring is not None and attached_ring is not ring:
                     # TODO: Check name of C and color accordingly
-                    sugar_bond_type = int(C_att.name[1])
-                    color = SUGAR_BOND_COLORS.get(sugar_bond_type, 'gray')
+                    color = 'gray'
+                    if self.bondtypes:
+                        sugar_bond_type = int(C_att.name[1])
+                        color = SUGAR_BOND_COLORS.get(sugar_bond_type, 'gray')
                     bild_attrs = dict(start=geom_center, end=attached_ring.center,
                                       sphere_radius=self.cylinder_radius,
                                       cylinder_radius=self.cylinder_radius,
