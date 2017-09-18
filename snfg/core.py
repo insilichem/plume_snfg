@@ -317,11 +317,7 @@ class Saccharyde(object):
 
     def __init__(self, residue, ring_atoms, base_size=4.0):
         self.residue = residue
-        try:
-            self.name = REVERSE_RESIDUE_CODES[residue.type]
-        except KeyError:
-            raise KeyError('{} not recognized!'.format(residue.type))
-
+        self.name = REVERSE_RESIDUE_CODES.get(residue.type, 'UNK')
         self.atoms = ring_atoms
         self.base_size = base_size
         self.info = RESIDUES[self.name]
