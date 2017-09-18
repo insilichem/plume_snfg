@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-ATOM_NAMES = set('C1 C2 C3 C4 C5 O5 O6'.split())
+ATOM_NAMES = set('C1 C2 C3 C4 C5 C6 O4 O5 O6'.split())
 
 SUGAR_BOND_COLORS = {
     1: 'yellow',
