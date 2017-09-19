@@ -144,7 +144,7 @@ class SNFG(object):
         if self._handler_res is not None:
             chimera.triggers.deleteHandler('Residue', self._handler_res)
             self._handler_res = None
-        Saccharyde._base_id[0] = 100
+        Saccharyde._base_id[0] = 99
 
     def detect(self):
         """
@@ -325,7 +325,7 @@ class SNFG(object):
 
 class Saccharyde(object):
 
-    _base_id = [100]
+    _base_id = [99]
 
     def __init__(self, residue, ring_atoms, base_size=4.0):
         self.residue = residue
