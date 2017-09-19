@@ -12,7 +12,7 @@ from chimera.baseDialog import ModelessDialog
 # Additional 3rd parties
 
 # Own
-from prefs import get_preferences, set_preferences, DEFAULTS
+from prefs import get_preferences, set_preferences, _defaults
 
 """
 The gui.py module contains the interface code, and only that. 
