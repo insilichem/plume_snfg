@@ -105,7 +105,6 @@ class SNFGDialog(ModelessDialog):
         # Create main window
         self.canvas = tk.Frame(parent)
         self.canvas.pack(expand=False, fill='both')
-        self.ui_labels = {}
         self.ui_full_size = tk.Scale(self.canvas, from_=0.5, to=6.0,
                                 orient='horizontal', label='Full Size',
                                 resolution=0.1)
@@ -117,7 +116,7 @@ class SNFGDialog(ModelessDialog):
                                            resolution=0.1)
         self.ui_connect = tk.Checkbutton(self.canvas, text='Connect residues',
                                          variable=self.var_connect)
-        self.ui_bondtypes = tk.Checkbutton(self.canvas, text='Color by bond type',
+        self.ui_bondtypes = tk.Checkbutton(self.canvas, text='Label bonds',
                                            variable=self.var_bondtypes)
 
         self.ui_more_info_btn = tk.Button(self.canvas, text='SNFG legend and details',

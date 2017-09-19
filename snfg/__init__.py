@@ -3,4 +3,3 @@
 
 from core import SNFG
 import gui
-import prefs

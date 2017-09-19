@@ -15,7 +15,7 @@ import chimera
 import Matrix as M
 from chimera import runCommand as run, cross, Point, Vector, preferences
 from Bld2VRML import openFileObject as openBildFileObject
-
+from VolumePath import Marker_Set as MarkerSet
 
 _defined_colors = False
 def _define_snfg_colors():
@@ -37,7 +37,7 @@ class SNFG(object):
     _instances = []
 
     def __init__(self, size=4.0, connect=True, cylinder_radius=0.5, cylinder_redfac=0,
-                 sphere_redfac=0, molecules=None, hide_residue=False, bondtypes=True):
+                 sphere_redfac=0, molecules=None, hide_residue=False, bondtypes=False):
         self._instances.append(self)
         if molecules is None:
             molecules = chimera.openModels.list(modelTypes=[chimera.Molecule])
@@ -129,9 +129,11 @@ class SNFG(object):
     def disable(self):
         self._problematic_residues = []
         to_remove = []
-        for vrml in chimera.openModels.list(modelTypes=[chimera.VRMLModel]):
+        for vrml in chimera.openModels.list():
             if vrml.name.startswith('SNFG'):
                 to_remove.append(vrml)
+                if vrml in self.molecules:
+                    del self.molecules[vrml]
         chimera.openModels.close(to_remove)
         for s in self.saccharydes.values():
             s.destroy()
@@ -225,14 +227,11 @@ class SNFG(object):
                 # of attached carbohydrate residue
                 if attached_ring is not None and attached_ring is not ring:
                     # TODO: Check name of C and color accordingly
-                    color = 'gray'
-                    if self.bondtypes:
-                        sugar_bond_type = int(C_att.name[1])
-                        color = SUGAR_BOND_COLORS.get(sugar_bond_type, 'gray')
                     bild_attrs = dict(start=geom_center, end=attached_ring.center,
                                       sphere_radius=self.cylinder_radius,
                                       cylinder_radius=self.cylinder_radius,
-                                      kind='saccharyde ' + C_att.name, color=color)
+                                      kind='saccharyde ' + C_att.name,
+                                      label=C_att.name)
                 # Otherwise this is an O-linked glycan or GLYCAM OME or TBT
                 else:
                     # Check for alpha carbon of attached protein residue
@@ -242,21 +241,21 @@ class SNFG(object):
                         bild_attrs = dict(start=geom_center, end=att_CA[0].coord(),
                                           sphere_radius=self.cylinder_radius,
                                           cylinder_radius=self.cylinder_radius,
-                                          kind='O-linked glycan', color='gray')
+                                          kind='O-linked glycan')
                     else:
                         # Then GLYCAM OME or TBT
                         bild_attrs = dict(start=geom_center, end=O_att.coord(),
                                           sphere_radius=self.size *
                                           SCALES['sphere'] * self.sphere_redfac,
                                           cylinder_radius=self.cylinder_radius * self.cylinder_redfac,
-                                          kind='GLYCAM OME or TBT', color='gray')
+                                          kind='GLYCAM OME or TBT')
             # If the oxygen is not attached to a carbon
             else:
                 # Then it is a terminal oxygen and marks the reducing end
                 bild_attrs = dict(start=geom_center, end=O_att.coord(),
                                   sphere_radius=self.size * SCALES['sphere'] * self.sphere_redfac,
                                   cylinder_radius=self.cylinder_radius * self.cylinder_redfac,
-                                  kind='reducing end', color='gray')
+                                  kind='reducing end')
                 # If the residue has an attached nitrogen
         elif N_att is not None:
             # Then we assume this is an N-linked glycan
@@ -265,7 +264,7 @@ class SNFG(object):
             bild_attrs = dict(start=geom_center, end=att_CA[0].coord(),
                               sphere_radius=self.cylinder_radius,
                               cylinder_radius=self.cylinder_radius,
-                              kind='N-linked glycan', color='gray')
+                              kind='N-linked glycan')
         # If there is no oxygen or nitrogen attached
         else:
             # Generate a point to denote terminal
@@ -275,15 +274,28 @@ class SNFG(object):
             bild_attrs = dict(start=geom_center, end=geom_center_att,
                               sphere_radius=self.cylinder_radius,
                               cylinder_radius=self.cylinder_radius,
-                              kind='terminal', color='gray')
+                              kind='terminal')
 
         geom_center_att = bild_attrs['end']
         bild = """
-        .color {color}
+        .color gray
         .sphere {end[0]} {end[1]} {end[2]} {sphere_radius}
         .cylinder {start[0]} {start[1]} {start[2]} {end[0]} {end[1]} {end[2]} {cylinder_radius}
         """.format(**bild_attrs)
+
         ring.vrml._vrml_connector = ring.vrml._build_vrml(bild, name='SNFG connector {}'.format(bild_attrs['kind']))
+        ring.vrml._vrml_connector[0].attrs = bild_attrs
+
+        if self.bondtypes and 'label' in bild_attrs:
+            ms = MarkerSet('SNFG label {}'.format(bild_attrs['kind']))
+            ms.marker_model((ring.vrml._vrml_connector[0].id, 
+                             ring.vrml._vrml_connector[0].subid + 1))
+            ring.vrml._vrml_connector[0].markerset = ms
+            ms.place_marker(bild_attrs['start'], None, 0.1)
+            ms.place_marker(bild_attrs['end'], None, 0.1)
+            link = ms.molecule.newBond(*ms.molecule.atoms[:2])
+            link.label = bild_attrs['label']
+            link.labelColor = chimera.colorTable.getColorByName('black')
         return ring.vrml._vrml_connector
 
     def destroy_shapes(self):
