@@ -64,7 +64,7 @@ class SNFGDialog(ModelessDialog):
     claim exclusive usage, use ModalDialog.
     """
 
-    buttons = ('Apply', 'Reset', 'Close')
+    buttons = ('OK', 'Apply', 'Reset', 'Cancel')
     default = None
     resize = False
     help = 'http://www.insilichem.com'
@@ -159,29 +159,32 @@ class SNFGDialog(ModelessDialog):
 
     def _set_defaults(self):
         preferences = get_preferences()
+        print(preferences)
         self.ui_icon_size.set(preferences['icon_size'])
         self.ui_full_size.set(preferences['full_size'])
         self.ui_cylinder_radius.set(preferences['cylinder_radius'])
         self.var_connect.set(int(preferences['connect']))
         self.var_bondtypes.set(int(preferences['bondtypes']))
     
-    def _reset_defaults(self):
-        self.ui_icon_size.set(DEFAULTS['size'] / 2.5)
-        self.ui_full_size.set(DEFAULTS['size'])
-        self.ui_cylinder_radius.set(DEFAULTS['cylinder_radius'])
-        self.var_connect.set(int(DEFAULTS['connect']))
-        self.var_bondtypes.set(int(DEFAULTS['bondtypes']))
-    Reset = _reset_defaults
-
     def _get_current_values(self):
         return dict(icon_size = float(self.ui_icon_size.get()),
                     full_size = float(self.ui_full_size.get()),
                     cylinder_radius = float(self.ui_cylinder_radius.get()),
                     connect = bool(self.var_connect.get()),
                     bondtypes = bool(self.var_bondtypes.get()))
+    
+    def Reset(self):
+        DEFAULTS = _defaults()
+        self.ui_icon_size.set(DEFAULTS['size'] / 2.5)
+        self.ui_full_size.set(DEFAULTS['size'])
+        self.ui_cylinder_radius.set(DEFAULTS['cylinder_radius'])
+        self.var_connect.set(int(DEFAULTS['connect']))
+        self.var_bondtypes.set(int(DEFAULTS['bondtypes']))
 
     def Apply(self):
+        print('Setting to ', self._get_current_values())
         set_preferences(**self._get_current_values())
+        print('Set to', get_preferences())
 
     def OK(self):
         self.Apply()
@@ -193,7 +196,7 @@ class SNFGDialog(ModelessDialog):
         ModelessDialog.Close(self)
         chimera.extension.manager.deregisterInstance(self)
         self.destroy()
-
+    Cancel = Close
 
 class HyperlinkManager:
     """
