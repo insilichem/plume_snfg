@@ -21,16 +21,13 @@ business logic like parsing files or applying modifications
 to the opened molecules. That belongs to core.py.
 """
 
-# This is a Chimera thing. Do it, and deal with it.
+
 ui = None
 def showUI(callback=None):
-    """
-    Requested by Chimera way-of-doing-things
-    """
     if chimera.nogui:
         tk.Tk().withdraw()
     global ui
-    if not ui: # Edit this to reflect the name of the class!
+    if not ui:
         ui = SNFGDialog()
     ui.enter()
     if callback:
