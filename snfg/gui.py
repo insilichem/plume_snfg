@@ -12,7 +12,7 @@ from chimera.baseDialog import ModelessDialog
 # Additional 3rd parties
 
 # Own
-from prefs import get_preferences, set_preferences, _defaults
+from prefs import prefs, _defaults
 
 """
 The gui.py module contains the interface code, and only that. 
@@ -77,7 +77,7 @@ class SNFGDialog(ModelessDialog):
         # Variables
         self.var_connect = tk.IntVar()
         self.var_bondtypes = tk.IntVar()
-
+        print(zip(prefs.keys(), prefs.values()))
         # Fire up
         ModelessDialog.__init__(self, resizable=False)
         if not chimera.nogui:  # avoid useless errors during development
@@ -158,13 +158,11 @@ class SNFGDialog(ModelessDialog):
         text.grid(row=5, column=1, sticky='we', padx=5, pady=3)
 
     def _set_defaults(self):
-        preferences = get_preferences()
-        print(preferences)
-        self.ui_icon_size.set(preferences['icon_size'])
-        self.ui_full_size.set(preferences['full_size'])
-        self.ui_cylinder_radius.set(preferences['cylinder_radius'])
-        self.var_connect.set(int(preferences['connect']))
-        self.var_bondtypes.set(int(preferences['bondtypes']))
+        self.ui_icon_size.set(prefs['icon_size'])
+        self.ui_full_size.set(prefs['full_size'])
+        self.ui_cylinder_radius.set(prefs['cylinder_radius'])
+        self.var_connect.set(int(prefs['connect']))
+        self.var_bondtypes.set(int(prefs['bondtypes']))
     
     def _get_current_values(self):
         return dict(icon_size = float(self.ui_icon_size.get()),
@@ -182,9 +180,9 @@ class SNFGDialog(ModelessDialog):
         self.var_bondtypes.set(int(DEFAULTS['bondtypes']))
 
     def Apply(self):
-        print('Setting to ', self._get_current_values())
-        set_preferences(**self._get_current_values())
-        print('Set to', get_preferences())
+        for k, v in self._get_current_values().items():
+            prefs.set(k, v, saveToFile=False)
+        prefs.saveToFile()
 
     def OK(self):
         self.Apply()
@@ -197,6 +195,7 @@ class SNFGDialog(ModelessDialog):
         chimera.extension.manager.deregisterInstance(self)
         self.destroy()
     Cancel = Close
+
 
 class HyperlinkManager:
     """

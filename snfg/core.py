@@ -204,7 +204,7 @@ class SNFG(object):
         for neighbor in ring.a1.neighbors:
             if (neighbor.element.name == 'O' and
                 neighbor.residue != ring.residue and
-                    neighbor.name != 'O{}'.format(ring.shifted + 5)):
+                neighbor.name != 'O{}'.format(ring.shifted + 5)):
                 O_att = neighbor
                 break
             elif neighbor.element.name == 'N':
