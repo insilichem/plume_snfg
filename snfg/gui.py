@@ -58,8 +58,9 @@ class SNFGDialog(PlumeBaseDialog):
         # Variables
         self.var_connect = tk.IntVar()
         self.var_bondtypes = tk.IntVar()
+        
         # Fire up
-        super(SNFGDialog, self).__init__(self, *args, **kwargs)
+        super(SNFGDialog, self).__init__(self, resizable=False, *args, **kwargs)
         self._set_defaults()
 
     def fill_in_ui(self, parent):
@@ -80,6 +81,8 @@ class SNFGDialog(PlumeBaseDialog):
         self.ui_more_info_btn = tk.Button(self.canvas, text='SNFG legend and details',
                                           command=lambda *a: web.open_new(r"https://www.ncbi.nlm.nih.gov/glycans/snfg.html"))
 
+        self.canvas.columnconfigure(0, weight=1)
+        self.canvas.columnconfigure(1, weight=1)
         self.ui_full_size.grid(row=0, column=0, sticky='we', padx=5, pady=3,
                                columnspan=2)
         self.ui_icon_size.grid(row=1, column=0, sticky='we', padx=5, pady=3,
