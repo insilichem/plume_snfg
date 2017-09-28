@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# get used to importing this in your Py27 projects!
+
 from __future__ import print_function, division 
 import chimera
 from Midas.midas_text import addCommand, doExtensionFunc
@@ -9,27 +9,21 @@ import prefs as _prefs
 from core import SNFG
 
 
-# Edit the name 
 class SNFGExtension(chimera.extension.EMO):
 
     def name(self):
-        # Always prefix with 'Plume'
         return 'Plume 3D-SNFG'
 
     def description(self):
-        # Something short but meaningful
         return "3D representation for saccharydes"
 
     def categories(self):
-        # Don't touch
         return ['InsiliChem']
 
     def icon(self):
-        # To be implemented
         return
 
     def activate(self):
-        # Don't edit unless you know what you're doing
         self.module('gui').showUI()
 
 

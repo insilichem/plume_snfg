@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-# Get used to importing this in your Py27 projects!
+
 from __future__ import print_function, division 
 # Python stdlib
 import Tkinter as tk
@@ -15,15 +15,8 @@ from chimera.baseDialog import ModelessDialog
 from plumesuite.ui import PlumeBaseDialog
 from prefs import prefs, _defaults
 
-"""
-The gui.py module contains the interface code, and only that. 
-It should only 'draw' the window, and should NOT contain any
-business logic like parsing files or applying modifications
-to the opened molecules. That belongs to core.py.
-"""
 
-
-ui = None
+ui = None  # singleton
 def showUI(callback=None):
     if chimera.nogui:
         tk.Tk().withdraw()
@@ -37,17 +30,8 @@ def showUI(callback=None):
 
 class SNFGDialog(PlumeBaseDialog):
 
-    """
-    To display a new dialog on the interface, you will normally inherit from
-    ModelessDialog class of chimera.baseDialog module. Being modeless means
-    you can have this dialog open while using other parts of the interface.
-    If you don't want this behaviour and instead you want your extension to 
-    claim exclusive usage, use ModalDialog.
-    """
-
     buttons = ('OK', 'Apply', 'Reset', 'Cancel')
     default = None
-    resize = False
     help = 'http://www.insilichem.com'
 
     def __init__(self, *args, **kwargs):
@@ -125,7 +109,7 @@ class SNFGDialog(PlumeBaseDialog):
         self.Apply()
         self.Close()
 
-    def Close(self):
+    def Close(self):  # Singleton mode
         global ui
         ui = None
         super(SNFGDialog, self).Close()
