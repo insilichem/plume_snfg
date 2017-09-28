@@ -124,3 +124,8 @@ class SNFGDialog(PlumeBaseDialog):
     def OK(self):
         self.Apply()
         self.Close()
+
+    def Close(self):
+        global ui
+        ui = None
+        super(SNFGDialog, self).Close()
