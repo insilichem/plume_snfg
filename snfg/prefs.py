@@ -23,10 +23,10 @@ DEFAULTS = _defaults()
 DEFAULTS['icon_size'] = DEFAULTS['size'] / 2.5
 DEFAULTS['full_size'] = DEFAULTS['size']
 
-prefs = addCategory("PlumeSnfg", HiddenCategory, optDict=DEFAULTS.copy())
+prefs = addCategory("plume_snfg", HiddenCategory, optDict=DEFAULTS.copy())
 try:
     with open(preferences._filename) as f:
         d = eval(f.read())
-    prefs.update(d.get('PlumeSnfg', {}))
+    prefs.update(d.get('plume_snfg', {}))
 except Exception as e:
     print('Problem loading saved preferences:', e)
