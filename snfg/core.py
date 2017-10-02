@@ -9,7 +9,7 @@ try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
-from snfg_definitions import COLORS, RESIDUES, SCALES, ATOM_NAMES, REVERSE_RESIDUE_CODES, SUGAR_BOND_COLORS
+from snfg_definitions import COLORS_CMYK, RESIDUES, SCALES, ATOM_NAMES, REVERSE_RESIDUE_CODES, SUGAR_BOND_COLORS
 import chimera
 import Matrix as M
 from chimera import runCommand as run, cross, Point, Vector, preferences
@@ -21,7 +21,7 @@ def _define_snfg_colors():
     """
     Change colors to official SNFG standard
     """
-    for color, cmyk in COLORS.items():
+    for color, cmyk in COLORS_CMYK.items():
         c, m, y, k = cmyk
         R = (1. - c) * (1. - k)
         G = (1. - m) * (1. - k)
