@@ -44,7 +44,7 @@ class SNFGDialog(PlumeBaseDialog):
         self.var_bondtypes = tk.IntVar()
         
         # Fire up
-        super(SNFGDialog, self).__init__(self, resizable=False, *args, **kwargs)
+        super(SNFGDialog, self).__init__(resizable=False, *args, **kwargs)
         self._set_defaults()
 
     def fill_in_ui(self, parent):
