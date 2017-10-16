@@ -980,9 +980,10 @@ class OrientedShape(object):
             vrml = openBildFileObject(f, '<string>', name)
         except chimera.NotABug:
             print(bild)
-        chimera.openModels.add(vrml, baseId=self._id, subid=self._subid)
-        self._subid += 1
-        return vrml
+        else:
+            chimera.openModels.add(vrml, baseId=self._id, subid=self._subid)
+            self._subid += 1
+            return vrml
 
 
 def _vmd_trans_angle(a, b, c, delta):
