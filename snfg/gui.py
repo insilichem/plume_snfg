@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 
-from __future__ import print_function, division 
+from __future__ import print_function, division
 # Python stdlib
 import Tkinter as tk
 import webbrowser as web
@@ -17,15 +17,13 @@ from prefs import prefs, _defaults
 
 
 ui = None  # singleton
-def showUI(callback=None):
+def showUI():
     if chimera.nogui:
         tk.Tk().withdraw()
     global ui
     if not ui:
         ui = SNFGDialog()
     ui.enter()
-    if callback:
-        ui.addCallback(callback)
 
 
 class SNFGDialog(PlumeBaseDialog):
@@ -42,7 +40,7 @@ class SNFGDialog(PlumeBaseDialog):
         # Variables
         self.var_connect = tk.IntVar()
         self.var_bondtypes = tk.IntVar()
-        
+
         # Fire up
         super(SNFGDialog, self).__init__(resizable=False, *args, **kwargs)
         self._set_defaults()
@@ -84,14 +82,14 @@ class SNFGDialog(PlumeBaseDialog):
         self.ui_cylinder_radius.set(prefs['cylinder_radius'])
         self.var_connect.set(int(prefs['connect']))
         self.var_bondtypes.set(int(prefs['bondtypes']))
-    
+
     def _get_current_values(self):
         return dict(icon_size = float(self.ui_icon_size.get()),
                     full_size = float(self.ui_full_size.get()),
                     cylinder_radius = float(self.ui_cylinder_radius.get()),
                     connect = bool(self.var_connect.get()),
                     bondtypes = bool(self.var_bondtypes.get()))
-    
+
     def Reset(self):
         DEFAULTS = _defaults()
         self.ui_icon_size.set(DEFAULTS['size'] / 2.5)
