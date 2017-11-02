@@ -12,7 +12,10 @@ from chimera.baseDialog import ModelessDialog
 # Additional 3rd parties
 
 # Own
-from libplume.ui import PlumeBaseDialog
+try:
+    from libplume.ui import PlumeBaseDialog
+except ImportError:  # try builtin
+    from _libplume.ui import PlumeBaseDialog
 from prefs import prefs, _defaults
 
 
