@@ -33,7 +33,9 @@ class SNFGDialog(PlumeBaseDialog):
 
     buttons = ('OK', 'Apply', 'Reset', 'Cancel')
     default = None
-    help = 'http://www.insilichem.com'
+    help = "https://github.com/insilichem/plume_snfg"
+    VERSION = '0.0.1'
+    VERSION_URL = "https://api.github.com/repos/insilichem/plume_snfg/releases/latest"
 
     def __init__(self, *args, **kwargs):
         # GUI init
