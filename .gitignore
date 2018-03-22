@@ -53,7 +53,7 @@ coverage.xml
 *.pot
 
 # Sphinx documentation
-docs/_build/
+docs/_build
 
 # Linux & IDEs
 .directory

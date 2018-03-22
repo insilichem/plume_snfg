@@ -101,7 +101,7 @@ STYLES = {
 }
 
 
-class PlumeBaseDialog(ModelessDialog):
+class TangramBaseDialog(ModelessDialog):
 
     default = None
     provideStatus = True
@@ -121,7 +121,7 @@ class PlumeBaseDialog(ModelessDialog):
         # Fire up
         if not chimera.nogui:  # avoid useless errors during development
             chimera.extension.manager.registerInstance(self)
-        super(PlumeBaseDialog, self).__init__(master=master, *args, **kwargs)
+        super(TangramBaseDialog, self).__init__(master=master, *args, **kwargs)
         # Fix styles
         self._fix_styles(*self.buttonWidgets.values())
         self._hidden_files_fix()

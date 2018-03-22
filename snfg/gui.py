@@ -13,9 +13,9 @@ from chimera.baseDialog import ModelessDialog
 
 # Own
 try:
-    from libplume.ui import PlumeBaseDialog
+    from libtangram.ui import TangramBaseDialog
 except ImportError:  # try builtin
-    from _libplume.ui import PlumeBaseDialog
+    from _libtangram.ui import TangramBaseDialog
 from prefs import prefs, _defaults
 
 
@@ -29,17 +29,17 @@ def showUI():
     ui.enter()
 
 
-class SNFGDialog(PlumeBaseDialog):
+class SNFGDialog(TangramBaseDialog):
 
     buttons = ('OK', 'Apply', 'Reset', 'Cancel')
     default = None
-    help = "https://github.com/insilichem/plume_snfg"
+    help = "https://github.com/insilichem/tangram_snfg"
     VERSION = '0.0.1'
-    VERSION_URL = "https://api.github.com/repos/insilichem/plume_snfg/releases/latest"
+    VERSION_URL = "https://api.github.com/repos/insilichem/tangram_snfg/releases/latest"
 
     def __init__(self, *args, **kwargs):
         # GUI init
-        self.title = 'Plume 3D-SNFG'
+        self.title = 'Tangram 3D-SNFG'
         self.controller = None
 
         # Variables

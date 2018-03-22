@@ -52,14 +52,14 @@ class SNFG(object):
         self._problematic_residues = []
         self._handler_mol, self._handler_res = None, None
         self.enable()
-    
+
     def __del__(self):
         self._instances.remove(self)
 
     @classmethod
     def as_icon(cls, molecules=None, size=None):
         if size is None:
-            size = preferences.get('plume_snfg', 'icon_size')
+            size = preferences.get('tangram_snfg', 'icon_size')
         return cls(size=size, connect=False, molecules=molecules,
                    hide_residue=False)
 
@@ -67,14 +67,14 @@ class SNFG(object):
     def as_full(cls, molecules=None, size=None, cylinder_radius=None,
                      connect=None, bondtypes=None):
         if size is None:
-            size = preferences.get('plume_snfg', 'full_size')
+            size = preferences.get('tangram_snfg', 'full_size')
         if cylinder_radius is None:
-            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+            cylinder_radius = preferences.get('tangram_snfg', 'cylinder_radius')
         if connect is None:
-            connect = preferences.get('plume_snfg', 'connect')
+            connect = preferences.get('tangram_snfg', 'connect')
         if bondtypes is None:
-            bondtypes = preferences.get('plume_snfg', 'bondtypes')
-        return cls(size=size, cylinder_radius=cylinder_radius, 
+            bondtypes = preferences.get('tangram_snfg', 'bondtypes')
+        return cls(size=size, cylinder_radius=cylinder_radius,
                    cylinder_redfac=0, sphere_redfac=0, molecules=molecules,
                    hide_residue=True, connect=connect, bondtypes=bondtypes)
 
@@ -82,28 +82,28 @@ class SNFG(object):
     def as_fullred(cls, molecules=None, size=None, cylinder_radius=None,
                      connect=None, bondtypes=None):
         if size is None:
-            size = preferences.get('plume_snfg', 'full_size')
+            size = preferences.get('tangram_snfg', 'full_size')
         if cylinder_radius is None:
-            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+            cylinder_radius = preferences.get('tangram_snfg', 'cylinder_radius')
         if connect is None:
-            connect = preferences.get('plume_snfg', 'connect')
+            connect = preferences.get('tangram_snfg', 'connect')
         if bondtypes is None:
-            bondtypes = preferences.get('plume_snfg', 'bondtypes')
+            bondtypes = preferences.get('tangram_snfg', 'bondtypes')
         return cls(size=size, cylinder_radius=cylinder_radius, cylinder_redfac=0.4,
                    sphere_redfac=0.25, molecules=molecules, hide_residue=True,
                    connect=connect, bondtypes=bondtypes)
-    
+
     @classmethod
     def as_fullshown(cls, molecules=None, size=None, cylinder_radius=None,
                      connect=None, bondtypes=None):
         if size is None:
-            size = preferences.get('plume_snfg', 'full_size')
+            size = preferences.get('tangram_snfg', 'full_size')
         if cylinder_radius is None:
-            cylinder_radius = preferences.get('plume_snfg', 'cylinder_radius')
+            cylinder_radius = preferences.get('tangram_snfg', 'cylinder_radius')
         if connect is None:
-            connect = preferences.get('plume_snfg', 'connect')
+            connect = preferences.get('tangram_snfg', 'connect')
         if bondtypes is None:
-            bondtypes = preferences.get('plume_snfg', 'bondtypes')
+            bondtypes = preferences.get('tangram_snfg', 'bondtypes')
         return cls(size=size, cylinder_radius=cylinder_radius, cylinder_redfac=0.4,
                    sphere_redfac=0.25, molecules=molecules, hide_residue=False,
                    connect=connect, bondtypes=bondtypes)
@@ -119,12 +119,12 @@ class SNFG(object):
         self._handler_res= chimera.triggers.addHandler('Residue', self._update_res_cb, None)
         if self._problematic_residues:
             chimera.statusline.show_message('Detected carbohydrate residues with potentially'
-                                            ' wrong atom names. Check reply log!', 
+                                            ' wrong atom names. Check reply log!',
                                             color='red', blankAfter=5)
             for r in set(self._problematic_residues):
                 print('! Residue {} might be a carbohydrate'
                       ' with wrong atom names.'.format(r))
-    
+
     def disable(self):
         self._problematic_residues = []
         to_remove = []
@@ -171,7 +171,7 @@ class SNFG(object):
         rings_per_molecule = defaultdict(dict)
         for m in molecules:
             for ring in m.minimumRings():
-                a = next(iter(ring.atoms)) 
+                a = next(iter(ring.atoms))
                 if len(ring.atoms) <= 6 and a.residue in hetero:
                     if all(a.name in ATOM_NAMES for a in ring.atoms):
                         rings_per_molecule[m][a.residue] = ring
@@ -287,7 +287,7 @@ class SNFG(object):
 
         if self.bondtypes and 'label' in bild_attrs:
             ms = MarkerSet('SNFG label {}'.format(bild_attrs['kind']))
-            ms.marker_model((ring.vrml._vrml_connector[0].id, 
+            ms.marker_model((ring.vrml._vrml_connector[0].id,
                              ring.vrml._vrml_connector[0].subid + 1))
             ring.vrml._vrml_connector[0].markerset = ms
             ms.place_marker(bild_attrs['start'], None, 0.1)
@@ -306,10 +306,10 @@ class SNFG(object):
         """
         Update shapes position and orientation after coordinates change.
         """
-        if (set(self.molecules) & changes.modified 
+        if (set(self.molecules) & changes.modified
             and 'activeCoordSet changed' in changes.reasons):
             self.draw()
-    
+
     def _update_res_cb(self, name, data, changes):
         if changes.deleted:
             for r, saccharyde in self.saccharydes.items():
@@ -363,7 +363,7 @@ class Saccharyde(object):
         the coordinates of the C1 atom (or C2 for sialic acids)
         to be the geometric center of the attached residue so that
         the shapes can be aligned properly without crashing when no
-        residue is attached. 
+        residue is attached.
         """
         return self.p1
 
@@ -435,11 +435,11 @@ class OrientedShape(object):
     The objective is to orient the shapes so that they face the neighboring residue,
     connected at C1. This is accomplished by calculating the equation for the line
     that connects the geometric centers of the target residue (where the shape will
-    be placed) and the neighboring residue (which is attached at the C1 atom). 
-    If we consider the geometric center of the target residue to be point A, the 
-    center of the neighboring residue to be point B, and the origin to be point O, 
+    be placed) and the neighboring residue (which is attached at the C1 atom).
+    If we consider the geometric center of the target residue to be point A, the
+    center of the neighboring residue to be point B, and the origin to be point O,
     then vector_AB=vector_OB - vector_OA. Knowing vector AB allows us to put new points
-    along the line; however, we want the shapes to be of a defined size. 
+    along the line; however, we want the shapes to be of a defined size.
     In order to adjust the size properly, the distance between geometric centers is
     determined, scaled to match the desired size, and then added/subtracted from the
     geometric center of the target sugar.

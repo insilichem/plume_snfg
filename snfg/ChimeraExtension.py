@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 
-from __future__ import print_function, division 
+from __future__ import print_function, division
 import chimera
 from Midas.midas_text import addCommand, doExtensionFunc
 import prefs as _prefs
@@ -12,7 +12,7 @@ from core import SNFG
 class SNFGExtension(chimera.extension.EMO):
 
     def name(self):
-        return 'Plume 3D-SNFG'
+        return 'Tangram 3D-SNFG'
 
     def description(self):
         return "3D representation for saccharydes"

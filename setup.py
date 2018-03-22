@@ -20,9 +20,9 @@ def read(*filenames, **kwargs):
 long_description = read('README.md')
 
 setup(
-    name='plume_snfg',
+    name='tangram_snfg',
     version='0.0.1',
-    url='https://github.com/insilichem/plume_snfg',
+    url='https://github.com/insilichem/tangram_snfg',
     author='Jaime Rodríguez-Guerra',
     author_email='jaime.rogue@gmail.com',
     description=long_description,
